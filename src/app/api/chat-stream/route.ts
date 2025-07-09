@@ -2,7 +2,7 @@ import { GoogleGenerativeAI, Tool } from '@google/generative-ai'
 import { NextRequest, NextResponse } from 'next/server'
 
 // Initialize Gemini AI client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
 // Helper function to convert base64 to buffer
 function base64ToBuffer(base64: string): Buffer {
@@ -18,13 +18,14 @@ const googleSearchTool = {
 export async function POST(request: NextRequest) {
   try {
     // Check API key
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY.trim() === '') {
       console.error('GEMINI_API_KEY not found in environment variables')
+      console.error('Available environment variables:', Object.keys(process.env).filter(key => key.includes('GEMINI')))
       return NextResponse.json(
         { 
-          error: 'API configuratie ontbreekt. Check Environment Variables.',
-          hint: 'Voeg GEMINI_API_KEY toe aan je environment variables',
-          debug: 'Environment variable GEMINI_API_KEY is not set'
+          error: 'GEMINI_API_KEY ontbreekt in environment variables',
+          hint: 'Voeg GEMINI_API_KEY toe aan je .env.local bestand (lokaal) of environment variables (productie)',
+          debug: `Environment variable GEMINI_API_KEY is not set or empty. Available GEMINI vars: ${Object.keys(process.env).filter(key => key.includes('GEMINI')).join(', ') || 'none'}`
         }, 
         { status: 500 }
       )
