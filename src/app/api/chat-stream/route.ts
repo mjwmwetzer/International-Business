@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(
       { 
-        error: 'Er is een fout opgetreden bij het verwerken van je bericht',
+        error: 'An error occurred while processing your message',
         details: errorMessage,
         timestamp: new Date().toISOString()
       },

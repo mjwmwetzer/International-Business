@@ -140,17 +140,17 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Fout bij het aanroepen van Gemini API:', error)
+    console.error('Error calling Gemini API:', error)
     
-    // Betere error information voor debugging
+    // Improved error information for debugging
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     
     return NextResponse.json(
       { 
-        error: 'Er is een fout opgetreden bij het verwerken van je bericht',
+        error: 'An error occurred while processing your message',
         details: errorMessage,
         timestamp: new Date().toISOString(),
-        hint: 'Check Netlify Function logs voor meer details'
+        hint: 'Check Netlify Function logs for more details'
       },
       { status: 500 }
     )

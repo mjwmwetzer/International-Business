@@ -44,6 +44,12 @@ export default function TestChatBot() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const recognitionRef = useRef<any>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [questionCount, setQuestionCount] = useState(10)
+
+  const setExamPrompt = (count: number) => {
+    const prompt = `Use the attached PDF as the only source. Create a multiple-choice practice exam for International Business students with ${count} questions.\n\nRequirements:\n- 4 answer options (A-D) per question\n- Exactly one correct answer\n- After each question, provide the correct letter and a short explanation (max 2 sentences)\n- Use clear, accessible language\n- Vary between definitions, applications, and critical-thinking questions\n\nStart with a short title and end with an overview of all correct answers.`
+    setMessage(prompt)
+  }
 
   // Setup paste event listeners
   useEffect(() => {
@@ -64,7 +70,7 @@ export default function TestChatBot() {
         const recognition = new SpeechRecognition()
         recognition.continuous = false
         recognition.interimResults = false
-        recognition.lang = 'nl-NL'
+        recognition.lang = 'en-GB'
         
         recognition.onresult = (event: any) => {
           const transcript = event.results[0][0].transcript
@@ -179,7 +185,7 @@ export default function TestChatBot() {
             }
             
             addUploadedFile(uploadedFile)
-            setPasteHint('📸 Afbeelding geplakt!')
+            setPasteHint('📸 Image pasted!')
             setTimeout(() => setPasteHint(''), 3000)
           }
           reader.readAsDataURL(file)
@@ -209,7 +215,7 @@ export default function TestChatBot() {
             }
           } else {
             // Regular text paste - let it happen normally
-            setPasteHint('📝 Tekst geplakt!')
+            setPasteHint('📝 Text pasted!')
             setTimeout(() => setPasteHint(''), 2000)
           }
         })
@@ -219,7 +225,7 @@ export default function TestChatBot() {
   }
 
   const handleUrlPaste = async (url: string) => {
-    setPasteHint('🔗 URL wordt geladen...')
+    setPasteHint('🔗 Loading URL...')
     
     try {
       // Check if it's an image URL
@@ -230,18 +236,18 @@ export default function TestChatBot() {
         // Load image directly
         setCapturedImage(url)
         setImagePreview(url)
-        setPasteHint('🖼️ Afbeelding URL geladen!')
+        setPasteHint('🖼️ Image URL loaded!')
         setTimeout(() => setPasteHint(''), 3000)
       } else {
         // For other URLs, just add to message with instruction
-        setMessage(prev => prev + (prev ? '\n\n' : '') + `🔗 URL: ${url}\n\nKun je deze link analyseren of de inhoud samenvatten?`)
-        setPasteHint('🔗 URL toegevoegd!')
+        setMessage(prev => prev + (prev ? '\n\n' : '') + `🔗 URL: ${url}\n\nCan you analyse this link or summarise the content?`)
+        setPasteHint('🔗 URL added!')
         setTimeout(() => setPasteHint(''), 3000)
       }
     } catch (error) {
       console.error('URL paste error:', error)
       setMessage(prev => prev + url)
-      setPasteHint('❌ URL als tekst geplakt')
+      setPasteHint('❌ URL pasted as text')
       setTimeout(() => setPasteHint(''), 3000)
     }
   }
@@ -279,7 +285,7 @@ export default function TestChatBot() {
         await handleUrlPaste(urls[0])
       } else {
         setMessage(prev => prev + (prev ? '\n\n' : '') + text)
-        setPasteHint('📝 Tekst gedropt!')
+        setPasteHint('📝 Text dropped!')
         setTimeout(() => setPasteHint(''), 2000)
       }
     }
@@ -299,7 +305,7 @@ export default function TestChatBot() {
     const fileName = file.name.toLowerCase()
     const fileType = file.type.toLowerCase()
     
-    // Definieer ondersteunde formaten
+    // Define supported formats
     const imageFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']
     const documentFormats = ['docx', 'pdf', 'txt', 'md']
     const dataFormats = ['csv', 'json']
@@ -313,7 +319,7 @@ export default function TestChatBot() {
     const isAudio = audioFormats.some(format => fileName.endsWith(`.${format}`)) || fileType.startsWith('audio/')
     
     if (!isImage && !isDocument && !isData && !isAudio) {
-      alert(`Bestandstype niet ondersteund!\n\nOndersteunde formaten:\n📸 Afbeeldingen: ${imageFormats.join(', ')}\n📄 Documenten: ${documentFormats.join(', ')}\n📊 Data: ${dataFormats.join(', ')}\n🎵 Audio: ${audioFormats.join(', ')}`)
+      alert(`File type not supported!\n\nSupported formats:\n📸 Images: ${imageFormats.join(', ')}\n📄 Documents: ${documentFormats.join(', ')}\n📊 Data: ${dataFormats.join(', ')}\n🎵 Audio: ${audioFormats.join(', ')}`)
       return
     }
 
@@ -338,7 +344,7 @@ export default function TestChatBot() {
           addUploadedFile(uploadedFile)
         }
         reader.onerror = () => {
-          alert('Fout bij het lezen van de afbeelding')
+          alert('Error reading the image')
         }
         reader.readAsDataURL(file)
         return
@@ -364,7 +370,7 @@ export default function TestChatBot() {
           addUploadedFile(uploadedFile)
         }
         reader.onerror = () => {
-          alert('Fout bij het lezen van het tekstbestand')
+          alert('Error reading the text file')
         }
         reader.readAsText(file, 'UTF-8')
         return
@@ -392,7 +398,7 @@ export default function TestChatBot() {
             
             addUploadedFile(uploadedFile)
           } catch (error) {
-            alert('Ongeldig JSON bestand')
+            alert('Invalid JSON file')
           }
         }
         reader.readAsText(file, 'UTF-8')
@@ -413,7 +419,7 @@ export default function TestChatBot() {
 
           if (!response.ok) {
             const errorData = await response.json()
-            throw new Error(errorData.error || 'Transcriptie mislukt')
+            throw new Error(errorData.error || 'Transcription failed')
           }
 
           const data = await response.json()
@@ -433,7 +439,7 @@ export default function TestChatBot() {
           addUploadedFile(uploadedFile)
         } catch (error) {
           console.error('Audio transcription error:', error)
-          alert('Fout bij audio transcriptie: ' + (error instanceof Error ? error.message : 'Onbekende fout'))
+          alert('Error during audio transcription: ' + (error instanceof Error ? error.message : 'Unknown error'))
         } finally {
           setIsLoading(false)
         }
@@ -471,7 +477,7 @@ export default function TestChatBot() {
       addUploadedFile(uploadedFile)
     } catch (error) {
       console.error('File upload error:', error)
-      alert('Fout bij uploaden: ' + (error instanceof Error ? error.message : 'Onbekende fout'))
+      alert('Upload error: ' + (error instanceof Error ? error.message : 'Unknown error'))
     }
   }
 
@@ -514,20 +520,20 @@ export default function TestChatBot() {
         
         // Add context from all selected files
         const fileContexts = selectedFiles.map((file, index) => {
-          const fileType = file.type === 'image' ? 'Afbeelding' : 
+          const fileType = file.type === 'image' ? 'Image' : 
                           file.type === 'document' ? 'Document' : 
-                          file.type === 'audio' ? 'Audio Transcriptie' : 'Data'
+                          file.type === 'audio' ? 'Audio Transcript' : 'Data'
           if (file.type === 'image') {
-            return `[${fileType} ${index + 1}: ${file.name}]\n[Afbeelding bijgevoegd voor analyse]`
+            return `[${fileType} ${index + 1}: ${file.name}]\n[Image attached for analysis]`
           } else {
             return `[${fileType}: ${file.name}]\n${file.content}`
           }
         }).join('\n\n---\n\n')
         
         if (message.trim()) {
-          payload.message = `${message}\n\n=== BIJGEVOEGDE BESTANDEN ===\n${fileContexts}`
+          payload.message = `${message}\n\n=== ATTACHED FILES ===\n${fileContexts}`
         } else {
-          payload.message = `Analyseer de volgende bestanden:\n\n${fileContexts}`
+          payload.message = `Analyse the following files:\n\n${fileContexts}`
         }
       }
 
@@ -616,7 +622,7 @@ export default function TestChatBot() {
           setResponse(currentStreamingResponseRef.current)
         }
       } else {
-        setResponse('Error: ' + (error instanceof Error ? error.message : 'Onbekende fout'))
+      setResponse('Error: ' + (error instanceof Error ? error.message : 'Unknown error'))
       }
     } finally {
       setIsStreaming(false)
@@ -656,20 +662,20 @@ export default function TestChatBot() {
         
         // Add context from all selected files
         const fileContexts = selectedFiles.map((file, index) => {
-          const fileType = file.type === 'image' ? 'Afbeelding' : 
+          const fileType = file.type === 'image' ? 'Image' : 
                           file.type === 'document' ? 'Document' : 
-                          file.type === 'audio' ? 'Audio Transcriptie' : 'Data'
+                          file.type === 'audio' ? 'Audio Transcript' : 'Data'
           if (file.type === 'image') {
-            return `[${fileType} ${index + 1}: ${file.name}]\n[Afbeelding bijgevoegd voor analyse]`
+            return `[${fileType} ${index + 1}: ${file.name}]\n[Image attached for analysis]`
           } else {
             return `[${fileType}: ${file.name}]\n${file.content}`
           }
         }).join('\n\n---\n\n')
         
         if (message.trim()) {
-          payload.message = `${message}\n\n=== BIJGEVOEGDE BESTANDEN ===\n${fileContexts}`
+          payload.message = `${message}\n\n=== ATTACHED FILES ===\n${fileContexts}`
         } else {
-          payload.message = `Analyseer de volgende bestanden:\n\n${fileContexts}`
+          payload.message = `Analyse the following files:\n\n${fileContexts}`
         }
       }
 
@@ -683,7 +689,7 @@ export default function TestChatBot() {
 
       if (!res.ok) {
         const errorData = await res.json()
-        throw new Error(errorData.error || 'Er is een fout opgetreden')
+        throw new Error(errorData.error || 'An error occurred')
       }
 
       const data = await res.json()
@@ -691,7 +697,7 @@ export default function TestChatBot() {
       setGroundingData(data.grounding || null)
     } catch (error) {
       console.error('Error:', error)
-      setResponse('Error: ' + (error instanceof Error ? error.message : 'Onbekende fout'))
+      setResponse('Error: ' + (error instanceof Error ? error.message : 'Unknown error'))
     } finally {
       setIsLoading(false)
     }
@@ -710,8 +716,40 @@ export default function TestChatBot() {
         <span className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center mr-2">
           <span className="text-white text-sm">💬</span>
         </span>
-        Test je API Key
+        Practice Exam Generator
       </h3>
+
+      <div className="bg-white rounded-lg border border-purple-200 p-4 mb-4">
+        <p className="text-sm text-gray-700 mb-3">
+          Upload the theory PDF first. Then choose how many questions you want and let the AI generate a multiple-choice exam.
+        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <label htmlFor="questionCount" className="text-sm font-medium text-gray-700">
+              Number of questions
+            </label>
+            <select
+              id="questionCount"
+              value={questionCount}
+              onChange={(event) => setQuestionCount(Number(event.target.value))}
+              className="rounded-md border border-gray-200 px-3 py-1 text-sm focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
+            >
+              {[5, 10, 15, 20, 25].map((count) => (
+                <option key={count} value={count}>
+                  {count} questions
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="button"
+            onClick={() => setExamPrompt(questionCount)}
+            className="inline-flex items-center justify-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700"
+          >
+            ✍️ Build practice exam prompt
+          </button>
+        </div>
+      </div>
       
       <div className="space-y-4">
         {/* File Manager */}
@@ -722,19 +760,19 @@ export default function TestChatBot() {
                 <span className="w-4 h-4 bg-purple-600 rounded-full flex items-center justify-center mr-2">
                   <span className="text-white text-xs">📁</span>
                 </span>
-                Geüploade Bestanden ({uploadedFiles.length})
+                Uploaded Files ({uploadedFiles.length})
               </h4>
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => getSelectedFiles().length === uploadedFiles.length ? deselectAllFiles() : selectAllFiles()}
                   className="text-xs text-purple-600 hover:text-purple-800"
                 >
-                  {getSelectedFiles().length === uploadedFiles.length ? 'Deselecteer alles' : 'Selecteer alles'}
+                  {getSelectedFiles().length === uploadedFiles.length ? 'Deselect all' : 'Select all'}
                 </button>
                 <span className="text-xs text-gray-500">
-                  {getSelectedFiles().length} geselecteerd
+                  {getSelectedFiles().length} selected
                   {getSelectedFiles().filter(f => f.type === 'image').length > 1 && 
-                    ` (${getSelectedFiles().filter(f => f.type === 'image').length} afbeeldingen)`
+                    ` (${getSelectedFiles().filter(f => f.type === 'image').length} images)`
                   }
                 </span>
               </div>
@@ -770,7 +808,7 @@ export default function TestChatBot() {
                         removeUploadedFile(file.id)
                       }}
                       className="text-red-500 hover:text-red-700 text-sm"
-                      title="Verwijder bestand"
+                      title="Remove file"
                     >
                       ×
                     </button>
@@ -808,7 +846,7 @@ export default function TestChatBot() {
         {/* AI Model Selection Cards */}
         <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
           <h3 className="text-gray-800 font-medium mb-3">
-            Kies AI Model
+            Choose AI Model
           </h3>
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -826,7 +864,7 @@ export default function TestChatBot() {
                   <div className={`w-3 h-3 rounded-full mr-2 ${
                     aiModel === 'pro' ? 'bg-purple-500' : 'bg-gray-300'
                   }`} />
-                  <span className="font-medium text-purple-700">🏆 Slimste</span>
+                  <span className="font-medium text-purple-700">🏆 Most advanced</span>
                 </div>
                 <span className="text-xs text-purple-600 font-medium">PRO</span>
               </div>
@@ -835,11 +873,11 @@ export default function TestChatBot() {
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-4 py-3 bg-gray-900 text-white text-sm rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-20 shadow-xl min-w-max">
                 <div className="text-center">
                   <div className="font-semibold text-purple-300 mb-1">Gemini 2.5 Pro</div>
-                  <div className="text-xs text-gray-300 mb-2">Beste redeneren en complexe taken</div>
+                  <div className="text-xs text-gray-300 mb-2">Best reasoning and complex tasks</div>
                   <div className="text-xs border-t border-gray-700 pt-2">
-                    <span className="text-green-400">✓ Hoogste kwaliteit</span><br/>
-                    <span className="text-yellow-400">⚠ Langzaamste responses</span><br/>
-                    <span className="text-blue-400">🎯 Beste voor analyses</span>
+                    <span className="text-green-400">✓ Highest quality</span><br/>
+                    <span className="text-yellow-400">⚠ Slowest responses</span><br/>
+                    <span className="text-blue-400">🎯 Best for analysis</span>
                   </div>
                 </div>
                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
@@ -860,7 +898,7 @@ export default function TestChatBot() {
                   <div className={`w-3 h-3 rounded-full mr-2 ${
                     aiModel === 'smart' ? 'bg-green-500' : 'bg-gray-300'
                   }`} />
-                  <span className="font-medium text-green-700">⚡ Slim</span>
+                  <span className="font-medium text-green-700">⚡ Fast</span>
                 </div>
                 <span className="text-xs text-green-600 font-medium">FLASH</span>
               </div>
@@ -869,11 +907,11 @@ export default function TestChatBot() {
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-4 py-3 bg-gray-900 text-white text-sm rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-20 shadow-xl min-w-max">
                 <div className="text-center">
                   <div className="font-semibold text-green-300 mb-1">Gemini 2.5 Flash</div>
-                  <div className="text-xs text-gray-300 mb-2">Goede balans snelheid & kwaliteit</div>
+                  <div className="text-xs text-gray-300 mb-2">Best balance of speed and quality</div>
                   <div className="text-xs border-t border-gray-700 pt-2">
-                    <span className="text-green-400">✓ Snelle responses</span><br/>
-                    <span className="text-green-400">✓ Goede kwaliteit</span><br/>
-                    <span className="text-blue-400">🎯 Beste voor dagelijks gebruik</span>
+                    <span className="text-green-400">✓ Fast responses</span><br/>
+                    <span className="text-green-400">✓ Good quality</span><br/>
+                    <span className="text-blue-400">🎯 Best for everyday use</span>
                   </div>
                 </div>
                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
@@ -903,12 +941,12 @@ export default function TestChatBot() {
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-4 py-3 bg-gray-900 text-white text-sm rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-20 shadow-xl min-w-max">
                 <div className="text-center">
                   <div className="font-semibold text-blue-300 mb-1">Gemini 2.0 Flash</div>
-                  <div className="text-xs text-gray-300 mb-2">Toegang tot actuele informatie</div>
+                  <div className="text-xs text-gray-300 mb-2">Access to current information</div>
                   <div className="text-xs border-t border-gray-700 pt-2">
-                    <span className="text-green-400">✓ Actuele info via Google</span><br/>
-                    <span className="text-green-400">✓ Bronvermelding</span><br/>
-                    <span className="text-yellow-400">⚠ Minder slim model</span><br/>
-                    <span className="text-blue-400">🎯 Automatisch Google Search</span>
+                    <span className="text-green-400">✓ Current info via Google</span><br/>
+                    <span className="text-green-400">✓ Sources included</span><br/>
+                    <span className="text-yellow-400">⚠ Less capable model</span><br/>
+                    <span className="text-blue-400">🎯 Automatic Google Search</span>
                   </div>
                 </div>
                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
@@ -935,8 +973,8 @@ export default function TestChatBot() {
             <div className="absolute inset-2 border-2 border-dashed border-purple-400 rounded-lg bg-purple-50 bg-opacity-90 flex items-center justify-center z-10">
               <div className="text-center">
                 <div className="text-4xl mb-2">📁</div>
-                <p className="text-purple-700 font-semibold">Drop bestanden of tekst hier</p>
-                <p className="text-purple-600 text-sm">Afbeeldingen, documenten, of URLs</p>
+                <p className="text-purple-700 font-semibold">Drop files or text here</p>
+                <p className="text-purple-600 text-sm">Images, documents, or URLs</p>
               </div>
             </div>
           )}
@@ -949,7 +987,7 @@ export default function TestChatBot() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={isDragOver ? "Drop bestanden of tekst hier..." : "Typ een vraag voor Gemini... (of plak met Ctrl+V)"}
+                placeholder={isDragOver ? "Drop files or text here..." : "Ask for a practice exam or ask a question about the theory... (or paste with Ctrl+V)"}
                 className="w-full p-2 border-0 resize-none focus:outline-none"
                 rows={2}
                 disabled={isLoading}
@@ -968,7 +1006,7 @@ export default function TestChatBot() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isLoading}
                 className="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                title="Bestand uploaden (📸 afbeeldingen, 📄 documenten, 📊 data, 🎵 audio)"
+                title="Upload file (📸 images, 📄 documents, 📊 data, 🎵 audio)"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
@@ -990,7 +1028,7 @@ export default function TestChatBot() {
                     ? 'text-red-600 bg-red-50 animate-pulse' 
                     : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50'
                 }`}
-                title={isListening ? "Stop opnamen" : "Start spraakherkenning"}
+                title={isListening ? "Stop recording" : "Start speech recognition"}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
@@ -1011,7 +1049,7 @@ export default function TestChatBot() {
           {/* Upload Status */}
           {uploadedContent && (
             <div className="mt-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
-              ✅ Bestand geüpload ({uploadedContent.length} karakters)
+              ✅ File uploaded ({uploadedContent.length} characters)
             </div>
           )}
           
@@ -1019,7 +1057,7 @@ export default function TestChatBot() {
           {isListening && (
             <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded flex items-center">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mr-2"></div>
-              Luistert...
+              Listening...
             </div>
           )}
         </div>
@@ -1035,9 +1073,9 @@ export default function TestChatBot() {
                 <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
                 <div className="w-3 h-3 bg-indigo-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
               </div>
-              <span className="text-purple-700 font-medium">🧠 Ik ga aan de slag met je slimme prompt!</span>
+              <span className="text-purple-700 font-medium">🧠 Working on your prompt!</span>
             </div>
-            <p className="text-purple-600 text-sm mt-2 ml-12">Even geduld, ik verzamel alle info en denk na over het beste antwoord... ✨</p>
+            <p className="text-purple-600 text-sm mt-2 ml-12">Please wait, gathering the details and shaping the best response... ✨</p>
           </div>
         )}
         
@@ -1049,7 +1087,7 @@ export default function TestChatBot() {
                 <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
                 <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
               </div>
-              <span className="text-purple-700 text-sm">Gemini denkt na...</span>
+              <span className="text-purple-700 text-sm">Gemini is thinking...</span>
             </div>
           </div>
         )}
@@ -1067,13 +1105,13 @@ export default function TestChatBot() {
             }`}>
               <span className="flex items-center">
                 {(response && response.startsWith('Error:')) ? (
-                  <>❌ Fout:</>
+                  <>❌ Error:</>
                 ) : (
                   <>
                     <span className={`w-3 h-3 rounded-full mr-2 ${
                       isStreaming ? 'bg-blue-600 animate-pulse' : 'bg-green-600'
                     }`}></span>
-                    {isStreaming ? '🔄 Live Response:' : '✅ Succes! Je API key werkt perfect:'}
+                    {isStreaming ? '🔄 Live response:' : '✅ Practice exam generated:'}
                   </>
                 )}
               </span>
@@ -1097,7 +1135,7 @@ export default function TestChatBot() {
             </div>
             {(response && response.startsWith('Error:')) && (
               <p className="text-red-600 text-xs mt-2">
-                Controleer of je API key correct is ingesteld in .env.local
+                Check that your API key is set correctly in .env.local
               </p>
             )}
             
@@ -1118,13 +1156,13 @@ export default function TestChatBot() {
                     <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z"/>
                   </svg>
                   <span className="text-blue-800 font-medium text-sm">
-                    Antwoord gebaseerd op actuele Google Search resultaten
+                    Answer based on current Google Search results
                   </span>
                 </div>
                 
                 {groundingData.searchQueries && groundingData.searchQueries.length > 0 && (
                   <div className="mb-3">
-                    <p className="text-blue-700 text-xs font-medium mb-1">Zoekopdrachten:</p>
+                    <p className="text-blue-700 text-xs font-medium mb-1">Search queries:</p>
                     <div className="flex flex-wrap gap-1">
                       {groundingData.searchQueries.map((query: string, index: number) => (
                         <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
@@ -1137,7 +1175,7 @@ export default function TestChatBot() {
                 
                 {groundingData.sources && groundingData.sources.length > 0 && (
                   <div>
-                    <p className="text-blue-700 text-xs font-medium mb-2">Bronnen:</p>
+                    <p className="text-blue-700 text-xs font-medium mb-2">Sources:</p>
                     <div className="space-y-2">
                       {groundingData.sources.slice(0, 3).map((source: any, index: number) => (
                         <div key={index} className="bg-white p-2 rounded border border-blue-200">

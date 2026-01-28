@@ -345,10 +345,10 @@ export default function ResponseActions({
 
   const getCopyButtonText = () => {
     switch (copyStatus) {
-      case 'copying': return '⏳ Kopiëren...'
-      case 'success': return '✅ Gekopieerd!'
-      case 'error': return '❌ Fout'
-      default: return '📋 Kopiëren'
+      case 'copying': return '⏳ Copying...'
+      case 'success': return '✅ Copied!'
+      case 'error': return '❌ Error'
+      default: return '📋 Copy'
     }
   }
 
@@ -370,19 +370,19 @@ export default function ResponseActions({
   const getTtsButtonText = () => {
     if (bestVoice) {
       switch (ttsStatus) {
-        case 'playing': return '⏸️ Pauzeren'
-        case 'paused': return '▶️ Hervatten'
-        case 'waiting': return '⏳ Starten...'
-        case 'error': return '❌ Fout'
-        default: return `🔊 Uitspreken (${bestVoice.name.split(' ')[0]})`
+        case 'playing': return '⏸️ Pause'
+        case 'paused': return '▶️ Resume'
+        case 'waiting': return '⏳ Starting...'
+        case 'error': return '❌ Error'
+        default: return `🔊 Read aloud (${bestVoice.name.split(' ')[0]})`
       }
     } else {
       switch (ttsStatus) {
-        case 'playing': return '⏸️ Pauzeren'
-        case 'paused': return '▶️ Hervatten'
-        case 'waiting': return '⏳ Starten...'
-        case 'error': return '❌ Fout'
-        default: return '🔊 Uitspreken'
+        case 'playing': return '⏸️ Pause'
+        case 'paused': return '▶️ Resume'
+        case 'waiting': return '⏳ Starting...'
+        case 'error': return '❌ Error'
+        default: return '🔊 Read aloud'
       }
     }
   }
@@ -406,9 +406,9 @@ export default function ResponseActions({
 
   const getWordDownloadButtonText = () => {
     switch (wordDownloadStatus) {
-      case 'generating': return '⏳ Genereren...'
-      case 'success': return '✅ Gedownload!'
-      case 'error': return '❌ Fout'
+      case 'generating': return '⏳ Generating...'
+      case 'success': return '✅ Downloaded!'
+      case 'error': return '❌ Error'
       default: return '📄 Download Word'
     }
   }
@@ -463,10 +463,10 @@ export default function ResponseActions({
               disabled={isStreaming}
               className={getTtsButtonClass()}
               title={
-                isStreaming ? "Wacht tot response compleet is" :
-                ttsStatus === 'playing' ? "Pauzeer voorlezen" :
-                ttsStatus === 'paused' ? "Hervat voorlezen" :
-                bestVoice ? `Lees voor met ${bestVoice.name}` : "Lees voor"
+                isStreaming ? "Wait until the response is complete" :
+                ttsStatus === 'playing' ? "Pause reading" :
+                ttsStatus === 'paused' ? "Resume reading" :
+                bestVoice ? `Read aloud with ${bestVoice.name}` : "Read aloud"
               }
             >
               <span>{getTtsButtonText()}</span>
@@ -477,7 +477,7 @@ export default function ResponseActions({
               <button
                 onClick={stopTextToSpeech}
                 className="p-2 rounded-lg text-sm transition-all duration-200 bg-red-100 hover:bg-red-200 text-red-700 border border-red-200"
-                title="Stop voorlezen"
+                title="Stop reading"
               >
                 ⏹️
               </button>
@@ -493,7 +493,7 @@ export default function ResponseActions({
               ? 'bg-blue-100 text-blue-700 border border-blue-200' 
               : 'bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-700 border border-gray-200'
           }`}
-          title="TTS instellingen"
+          title="TTS settings"
         >
           ⚙️
         </button>
@@ -503,7 +503,7 @@ export default function ResponseActions({
           onClick={handleWordDownload}
           disabled={isStreaming || wordDownloadStatus === 'generating'}
           className={getWordDownloadButtonClass()}
-          title="Download als Word document"
+          title="Download as a Word document"
         >
           <span>{getWordDownloadButtonText()}</span>
         </button>
@@ -513,7 +513,7 @@ export default function ResponseActions({
           onClick={handleCopy}
           disabled={isStreaming || copyStatus === 'copying'}
           className={getCopyButtonClass()}
-          title="Kopieer naar klembord"
+          title="Copy to clipboard"
         >
           <span>{getCopyButtonText()}</span>
         </button>
@@ -552,7 +552,7 @@ export default function ResponseActions({
           {/* Microsoft TTS Settings */}
           {!useGeminiTTS && (
             <div>
-              <label className="block text-blue-700 text-sm font-medium mb-2">⚡ Spraaksnelheid</label>
+              <label className="block text-blue-700 text-sm font-medium mb-2">⚡ Speech speed</label>
               <div className="grid grid-cols-2 gap-2">
                 {speedOptions.map((option) => (
                   <button
@@ -569,7 +569,7 @@ export default function ResponseActions({
                 ))}
               </div>
               <div className="mt-2 text-blue-600 text-xs text-center">
-                Huidige snelheid: {speechRate}x
+                Current speed: {speechRate}x
               </div>
             </div>
           )}
@@ -578,7 +578,7 @@ export default function ResponseActions({
           {useGeminiTTS && (
             <div className="space-y-4">
               <div>
-                <label className="block text-purple-700 text-sm font-medium mb-2">🎭 Stemkeuze</label>
+                <label className="block text-purple-700 text-sm font-medium mb-2">🎭 Voice selection</label>
                 <select
                   value={selectedGeminiVoice.name}
                   onChange={(e) => {
@@ -596,7 +596,7 @@ export default function ResponseActions({
               </div>
 
               <div>
-                <label className="block text-purple-700 text-sm font-medium mb-2">😊 Emotie</label>
+                <label className="block text-purple-700 text-sm font-medium mb-2">😊 Emotion</label>
                 <div className="grid grid-cols-3 gap-2">
                   {EMOTION_STYLES.map((emotion) => (
                     <button

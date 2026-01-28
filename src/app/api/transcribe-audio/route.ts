@@ -11,8 +11,8 @@ export async function POST(request: NextRequest) {
       console.error('GEMINI_API_KEY not found in environment variables')
       return NextResponse.json(
         { 
-          error: 'Gemini API key niet geconfigureerd. Voeg GEMINI_API_KEY toe aan je environment variables.',
-          hint: 'Voor audio transcriptie is een Gemini API key vereist',
+          error: 'Gemini API key not configured. Add GEMINI_API_KEY to your environment variables.',
+          hint: 'A Gemini API key is required for audio transcription',
           debug: 'Environment variable GEMINI_API_KEY is not set'
         }, 
         { status: 500 }
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     
     if (!file) {
       return NextResponse.json(
-        { error: 'Geen audio bestand ontvangen' },
+        { error: 'No audio file received' },
         { status: 400 }
       )
     }
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     
     if (!allowedTypes.includes(file.type) && !file.name.match(/\.(mp3|wav|aiff|aac|ogg|flac|mpeg|mpga)$/i)) {
       return NextResponse.json(
-        { error: 'Niet ondersteund audio formaat. Ondersteunde formaten: MP3, WAV, AIFF, AAC, OGG, FLAC' },
+        { error: 'Unsupported audio format. Supported formats: MP3, WAV, AIFF, AAC, OGG, FLAC' },
         { status: 400 }
       )
     }
@@ -48,8 +48,8 @@ export async function POST(request: NextRequest) {
     if (file.size > maxSize) {
       return NextResponse.json(
         { 
-          error: 'Audio bestand te groot. Maximum grootte is 25MB.',
-          hint: 'Voor grotere bestanden hebben we Files API ondersteuning nodig',
+          error: 'Audio file too large. Maximum size is 25MB.',
+          hint: 'Larger files require Files API support',
           actualSize: `${(file.size / 1024 / 1024).toFixed(1)}MB`
         },
         { status: 400 }
@@ -88,8 +88,8 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Create transcription request with Dutch language prompt
-      const prompt = "Transcribeer deze audio naar Nederlandse tekst. Geef alleen de getranscribeerde tekst terug, zonder extra commentaar."
+      // Create transcription request with an English language prompt
+      const prompt = "Transcribe this audio into English. Return only the transcript without extra commentary."
       
       const result = await model.generateContent([prompt, audioPart])
       const response = await result.response
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
         fileSize: file.size,
         engine: 'Gemini 2.5 Flash',
         method: 'Inline Data',
-        message: 'Audio succesvol getranscribeerd met Gemini AI'
+        message: 'Audio successfully transcribed with Gemini AI'
       })
 
     } catch (transcriptionError: any) {
@@ -117,14 +117,14 @@ export async function POST(request: NextRequest) {
       // Handle specific Gemini errors
       if (transcriptionError?.message?.includes('quota')) {
         return NextResponse.json(
-          { error: 'Gemini API quota overschreden. Probeer later opnieuw.' },
+          { error: 'Gemini API quota exceeded. Please try again later.' },
           { status: 429 }
         )
       }
       
       if (transcriptionError?.message?.includes('unsupported')) {
         return NextResponse.json(
-          { error: 'Audio formaat niet ondersteund door Gemini. Probeer MP3, WAV of AAC.' },
+          { error: 'Audio format not supported by Gemini. Try MP3, WAV, or AAC.' },
           { status: 400 }
         )
       }
@@ -132,8 +132,8 @@ export async function POST(request: NextRequest) {
       if (transcriptionError?.message?.includes('size') || transcriptionError?.message?.includes('too large')) {
         return NextResponse.json(
           { 
-            error: 'Audio bestand te groot voor Gemini transcriptie (max 25MB).',
-            hint: 'Probeer een kleiner bestand of comprimeer de audio'
+            error: 'Audio file too large for Gemini transcription (max 25MB).',
+            hint: 'Try a smaller file or compress the audio'
           },
           { status: 413 }
         )
@@ -143,8 +143,8 @@ export async function POST(request: NextRequest) {
       if (transcriptionError?.message?.includes('payload') || transcriptionError?.message?.includes('memory')) {
         return NextResponse.json(
           { 
-            error: 'Bestand te groot om te verwerken. Probeer een kleiner audio bestand.',
-            hint: 'Voor bestanden >20MB kunnen er memory issues optreden'
+            error: 'File too large to process. Try a smaller audio file.',
+            hint: 'Files larger than 20MB can cause memory issues'
           },
           { status: 413 }
         )
@@ -153,9 +153,9 @@ export async function POST(request: NextRequest) {
       // More detailed error info
       return NextResponse.json(
         { 
-          error: 'Fout bij audio transcriptie',
-          details: transcriptionError?.message || 'Onbekende fout bij Gemini audio transcriptie',
-          hint: 'Controleer of het audio bestand geldig is en probeer een kleiner bestand',
+          error: 'Error during audio transcription',
+          details: transcriptionError?.message || 'Unknown error during Gemini audio transcription',
+          hint: 'Check that the audio file is valid and try a smaller file',
           stack: transcriptionError?.stack?.substring(0, 500) // First 500 chars of stack trace
         },
         { status: 500 }
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(
       { 
-        error: 'Er is een fout opgetreden bij het verwerken van het audio bestand',
+        error: 'An error occurred while processing the audio file',
         details: errorMessage,
         timestamp: new Date().toISOString(),
         engine: 'Gemini AI'
