@@ -199,11 +199,11 @@ export default function GeminiTTS({
       if (!response.ok) {
         const errorText = await response.text()
         console.error('TTS API Error:', response.status, errorText)
-        throw new Error(`TTS API fout: ${response.status}`)
+        throw new Error(`TTS API error: ${response.status}`)
       }
 
       setTtsStatus('loading')
-      setProgress('Audio laden...')
+      setProgress('Loading audio...')
 
       const audioBlob = await response.blob()
       console.log('Audio blob created:', {
@@ -218,7 +218,7 @@ export default function GeminiTTS({
 
       audio.onloadstart = () => {
         console.log('🔄 Audio loading started')
-        setProgress('Audio wordt geladen...')
+        setProgress('Audio is loading...')
       }
       audio.oncanplay = () => {
         console.log('✅ Audio ready to play')
@@ -242,7 +242,7 @@ export default function GeminiTTS({
       audio.onerror = (event) => {
         console.error('❌ Audio playback error:', event)
         setTtsStatus('error')
-        setProgress('Afspeel fout')
+        setProgress('Playback error')
         setTimeout(() => {
           setTtsStatus('idle')
           setProgress('')
@@ -266,7 +266,7 @@ export default function GeminiTTS({
     } catch (error) {
       console.error('TTS Error:', error)
       setTtsStatus('error')
-      setProgress('Er is een fout opgetreden')
+      setProgress('An error occurred')
       setTimeout(() => {
         setTtsStatus('idle')
         setProgress('')
@@ -286,11 +286,11 @@ export default function GeminiTTS({
 
   const getTtsButtonText = () => {
     switch (ttsStatus) {
-      case 'generating': return `🔄 ${progress || 'Genereren...'}`
-      case 'loading': return `📥 ${progress || 'Laden...'}`
-      case 'playing': return '⏸️ Pauzeren'
-      case 'paused': return '▶️ Hervatten'
-      case 'error': return `❌ ${progress || 'Fout'}`
+      case 'generating': return `🔄 ${progress || 'Generating...'}`
+      case 'loading': return `📥 ${progress || 'Loading...'}`
+      case 'playing': return '⏸️ Pause'
+      case 'paused': return '▶️ Resume'
+      case 'error': return `❌ ${progress || 'Error'}`
       default: return `🔊 Gemini TTS (${selectedVoice.name})`
     }
   }
@@ -323,7 +323,7 @@ export default function GeminiTTS({
           onClick={generateTTS}
           disabled={isStreaming || ttsStatus === 'generating' || ttsStatus === 'loading'}
           className={getTtsButtonClass()}
-          title={`Lees voor met ${selectedVoice.name} stem`}
+          title={`Read aloud with ${selectedVoice.name} voice`}
         >
           <span className="truncate">{getTtsButtonText()}</span>
         </button>
@@ -336,7 +336,7 @@ export default function GeminiTTS({
                 ? 'bg-purple-100 text-purple-700 border border-purple-200' 
                 : 'bg-gray-100 hover:bg-purple-100 text-gray-600 hover:text-purple-700 border border-gray-200'
             }`}
-            title="Stem instellingen"
+            title="Voice settings"
           >
             🎤
           </button>
@@ -346,7 +346,7 @@ export default function GeminiTTS({
           <button
             onClick={stopTTS}
             className="p-2 rounded-lg text-sm transition-all duration-200 bg-red-100 hover:bg-red-200 text-red-700 border border-red-200"
-            title="Stop voorlezen"
+            title="Stop reading"
           >
             ⏹️
           </button>
@@ -357,7 +357,7 @@ export default function GeminiTTS({
       {!hideSettings && showVoiceSettings && (
         <div className="absolute z-10 mt-2 right-0 w-80 p-4 bg-purple-50 border border-purple-200 rounded-lg shadow-lg space-y-4">
           <div>
-            <label className="block text-purple-700 text-sm font-medium mb-2">🎭 Stemkeuze</label>
+            <label className="block text-purple-700 text-sm font-medium mb-2">🎭 Voice selection</label>
             <select
               value={selectedVoice.name}
               onChange={(e) => {
@@ -375,7 +375,7 @@ export default function GeminiTTS({
           </div>
 
           <div>
-            <label className="block text-purple-700 text-sm font-medium mb-2">😊 Emotie</label>
+            <label className="block text-purple-700 text-sm font-medium mb-2">😊 Emotion</label>
             <div className="grid grid-cols-3 gap-2">
               {EMOTION_STYLES.map((emotion) => (
                 <button

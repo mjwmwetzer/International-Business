@@ -23,7 +23,7 @@ export default function CopyButton({ text, className, title }: CopyButtonProps) 
       className={className}
       title={title}
     >
-      📋 {copied ? 'Gekopieerd!' : 'Kopieer'}
+      📋 {copied ? 'Copied!' : 'Copy'}
     </button>
   )
 }

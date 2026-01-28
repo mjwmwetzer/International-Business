@@ -133,21 +133,21 @@ export async function POST(request: NextRequest) {
     // Input validation
     if (!text || typeof text !== 'string') {
       return NextResponse.json(
-        { error: 'Tekst is vereist en moet een string zijn' },
+        { error: 'Text is required and must be a string' },
         { status: 400 }
       )
     }
 
     if (text.length > 32000) {
       return NextResponse.json(
-        { error: 'Tekst mag maximaal 32.000 karakters bevatten' },
+        { error: 'Text must be 32,000 characters or fewer' },
         { status: 400 }
       )
     }
 
     if (!isValidVoice(voiceName)) {
       return NextResponse.json(
-        { error: `Ongeldige stem: ${voiceName}. Gebruik een van de beschikbare Gemini stemmen.` },
+        { error: `Invalid voice: ${voiceName}. Use one of the available Gemini voices.` },
         { status: 400 }
       )
     }
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
       // Validate speakers
       if (speakers.length > 2) {
         return NextResponse.json(
-          { error: 'Maximaal 2 sprekers worden ondersteund' },
+          { error: 'A maximum of 2 speakers is supported' },
           { status: 400 }
         )
       }
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
       for (const speaker of speakers) {
         if (!isValidVoice(speaker.voiceName)) {
           return NextResponse.json(
-            { error: `Ongeldige stem voor spreker ${speaker.name}: ${speaker.voiceName}` },
+            { error: `Invalid voice for speaker ${speaker.name}: ${speaker.voiceName}` },
             { status: 400 }
           )
         }
@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
     if (!audioData) {
       console.error('No audio data received from Gemini TTS')
       return NextResponse.json(
-        { error: 'Geen audio data ontvangen van Gemini TTS' },
+        { error: 'No audio data received from Gemini TTS' },
         { status: 500 }
       )
     }
@@ -278,7 +278,7 @@ export async function POST(request: NextRequest) {
     if (error.message?.includes('quota')) {
       return NextResponse.json(
         { 
-          error: 'API quota bereikt. Probeer het later opnieuw.',
+          error: 'API quota reached. Please try again later.',
           details: 'Rate limit exceeded'
         },
         { status: 429 }
@@ -288,7 +288,7 @@ export async function POST(request: NextRequest) {
     if (error.message?.includes('not supported')) {
       return NextResponse.json(
         { 
-          error: 'TTS functionaliteit is momenteel niet beschikbaar.',
+          error: 'TTS functionality is currently unavailable.',
           details: error.message
         },
         { status: 503 }
@@ -299,7 +299,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(
       { 
-        error: 'Er is een fout opgetreden bij het genereren van audio',
+        error: 'An error occurred while generating audio',
         details: errorMessage,
         timestamp: new Date().toISOString()
       },
